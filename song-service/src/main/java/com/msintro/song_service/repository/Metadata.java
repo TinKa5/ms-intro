@@ -22,7 +22,7 @@ public class Metadata {
 
     private String album; // 1-100 characters text.
 
-    private Duration duration; // Format mm:ss, with leading zeros.
+    private String duration; // Format mm:ss, with leading zeros.
 
     private Integer year; // YYYY format b
 }

@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS metadata;
+CREATE TABLE IF NOT EXISTS metadata(
+    id BIGINT PRIMARY KEY,
+    album VARCHAR(100) NOT NULL,
+    artist VARCHAR(100) NOT NULL,
+    duration VARCHAR(10) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    year INTEGER NOT NULL
+)
