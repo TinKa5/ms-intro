@@ -5,9 +5,6 @@ spring:
     url: ${RESOURCE_DB_URL:jdbc:postgresql://localhost:5432/resource-db}
     username: ${RESOURCE_DB_USER:postgres}
     password: ${RESOURCE_DB_PASSWORD:postgres}
-  jpa:
-    hibernate:
-      ddl-auto: update
 server:
   port: 8081
 song-service:

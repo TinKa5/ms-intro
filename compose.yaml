@@ -6,12 +6,9 @@ services:
       POSTGRES_USER: ${RESOURCE_DB_USER}
       POSTGRES_PASSWORD: ${RESOURCE_DB_PASSWORD}
     volumes:
-      - resource-db-data:/var/lib/postgresql/data
       - ./init-scripts/resource-db:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
-    networks:
-      - ms-net
 
   pgadmin:
     image: dpage/pgadmin4
@@ -24,8 +21,6 @@ services:
       - pgadmin:/var/lib/pgadmin
     ports:
       - "5050:80"
-    networks:
-      - ms-net
 
   song-db:
     image: postgres:17-alpine
@@ -34,12 +29,9 @@ services:
       POSTGRES_USER: ${SONG_DB_USER}
       POSTGRES_PASSWORD: ${SONG_DB_PASSWORD}
     volumes:
-      - song-db-data:/var/lib/postgresql/data
       - ./init-scripts/song-db:/docker-entrypoint-initdb.d:ro
     ports:
       - "5433:5432"
-    networks:
-      - ms-net
 
   song-service:
     build:
@@ -52,8 +44,6 @@ services:
       - song-db
     ports:
       - "8082:8082"
-    networks:
-      - ms-net
 
   resource-service:
     build:
@@ -68,12 +58,6 @@ services:
       - song-service
     ports:
       - "8081:8081"
-    networks:
-      - ms-net
 
 volumes:
   pgadmin:
-  resource-db-data:
-  song-db-data:
-networks:
-  ms-net:

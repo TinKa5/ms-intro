@@ -3,13 +3,11 @@ package com.msintro.resource_service.services;
 import com.msintro.resource_service.dto.IdListResponseDto;
 import com.msintro.resource_service.dto.IdResponseDto;
 import com.msintro.resource_service.dto.MetadataDto;
-import com.msintro.resource_service.exceptions.InvalidIdException;
-import com.msintro.resource_service.exceptions.InvalidIdListException;
-import com.msintro.resource_service.exceptions.InvalidLengthIdListException;
-import com.msintro.resource_service.exceptions.ResourceNotFoundException;
+import com.msintro.resource_service.exceptions.*;
 import com.msintro.resource_service.repository.AudioRecord;
 import com.msintro.resource_service.repository.AudioRecordRepository;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -18,6 +16,7 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -39,12 +38,18 @@ public class ResourceService {
 
     public IdResponseDto save(byte[] audioData) {
 
+        MetadataDto metadata = parseAudio(audioData);
+        if (metadata == null) throw new InvalidMP3FormatException();
+
         AudioRecord record = repository.save(new AudioRecord(null, "audio/mpeg", audioData));
 
-        MetadataDto metadata = parseAudio(audioData);
         metadata.setId(record.getId());
         if (client != null) {
-            client.saveMetadata(metadata);
+            HttpStatusCode status = client.saveMetadata(metadata).getStatusCode();
+            if (status.isError()) {
+                repository.deleteById(record.getId());
+                throw new InvalidMP3FormatException();
+            }
         }
         return new IdResponseDto(record.getId());
     }
@@ -113,7 +118,14 @@ public class ResourceService {
     }
 
     private MetadataDto mapMetadata(Metadata metadata) {
-        Integer total = (int) Double.parseDouble(metadata.get(DURATION));
+        if (!isValidMetadata(metadata)) return null;
+        int total;
+        try {
+            total = (int) Double.parseDouble(metadata.get(DURATION));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+
         String duration = String.format("%02d:%02d", total / 60, total % 60);
         return MetadataDto.builder()
                 .name(metadata.get(NAME))
@@ -122,6 +134,17 @@ public class ResourceService {
                 .year(metadata.get(YEAR))
                 .duration(duration)
                 .build();
+    }
+
+    private boolean isValidMetadata(Metadata metadata) {
+        if (StringUtils.isBlank(metadata.get(NAME))
+                || StringUtils.isBlank(metadata.get(ALBUM))
+                || StringUtils.isBlank(metadata.get(ARTIST))
+                || StringUtils.isBlank(metadata.get(YEAR))
+                || StringUtils.isBlank(metadata.get(DURATION))) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -4,6 +4,7 @@ import com.msintro.resource_service.dto.IdListResponseDto;
 import com.msintro.resource_service.dto.IdResponseDto;
 import com.msintro.resource_service.dto.MetadataDto;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -15,13 +16,13 @@ public class SongRestClient {
         restClient = builder.baseUrl(url).build();
     }
 
-    public IdResponseDto saveMetadata(MetadataDto metadata) {
+    public ResponseEntity<IdResponseDto> saveMetadata(MetadataDto metadata) {
         return restClient
                 .post()
                 .uri("/songs")
                 .body(metadata)
                 .retrieve()
-                .body(IdResponseDto.class);
+                .toEntity(IdResponseDto.class);
     }
 
     public IdListResponseDto deleteMetadata(String paramsString) {

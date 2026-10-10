@@ -5,8 +5,5 @@ spring:
     url: ${SONG_DB_URL:jdbc:postgresql://localhost:5433/song-db}
     username: ${SONG_DB_USER:postgres}
     password: ${SONG_DB_PASSWORD:postgres}
-  jpa:
-    hibernate:
-      ddl-auto: update
 server:
     port: 8082

@@ -1,9 +1,6 @@
 package com.msintro.resource_service.exceptionhandler;
 
-import com.msintro.resource_service.exceptions.InvalidIdException;
-import com.msintro.resource_service.exceptions.InvalidIdListException;
-import com.msintro.resource_service.exceptions.InvalidLengthIdListException;
-import com.msintro.resource_service.exceptions.ResourceNotFoundException;
+import com.msintro.resource_service.exceptions.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -21,11 +18,22 @@ public class CustomExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidResourceType(
             HttpMediaTypeNotSupportedException ex) {
 
-        Map<String, String> details = new LinkedHashMap<>();
+        ErrorResponse response = new ErrorResponse(
+                "Invalid file format: " + ex.getContentType() + ". Only MP3 files are allowed",
+                "400"
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(response);
+    }
+
+    @ExceptionHandler(InvalidMP3FormatException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidResourceType(
+            InvalidMP3FormatException ex) {
 
         ErrorResponse response = new ErrorResponse(
-                "Invalid file format: application/json. Only MP3 files are allowed",
-                "400"
+                ex.getMessage(), "400"
         );
 
         return ResponseEntity
