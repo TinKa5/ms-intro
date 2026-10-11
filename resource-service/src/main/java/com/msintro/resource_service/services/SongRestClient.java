@@ -3,6 +3,7 @@ package com.msintro.resource_service.services;
 import com.msintro.resource_service.dto.IdListResponseDto;
 import com.msintro.resource_service.dto.IdResponseDto;
 import com.msintro.resource_service.dto.MetadataDto;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -10,10 +11,17 @@ import org.springframework.web.client.RestClient;
 
 @Component
 public class SongRestClient {
+
     private final RestClient restClient;
 
-    SongRestClient(RestClient.Builder builder, @Value("${song-service.url}") String url) {
-        restClient = builder.baseUrl(url).build();
+    public SongRestClient(
+            @Qualifier("loadBalancedRestClientBuilder")
+            RestClient.Builder builder,
+            @Value("${song-service.url}") String url) {
+
+        this.restClient = builder.clone()
+                .baseUrl(url)
+                .build();
     }
 
     public ResponseEntity<IdResponseDto> saveMetadata(MetadataDto metadata) {
