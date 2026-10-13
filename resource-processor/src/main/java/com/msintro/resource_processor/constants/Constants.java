@@ -1,4 +1,4 @@
-package com.msintro.resource_service.constants;
+package com.msintro.resource_processor.constants;
 
 public class Constants {
     public static final String NAME = "dc:title";

@@ -5,6 +5,11 @@ spring:
     url: ${RESOURCE_DB_URL:jdbc:postgresql://localhost:5432/resource-db}
     username: ${RESOURCE_DB_USER:postgres}
     password: ${RESOURCE_DB_PASSWORD:postgres}
+
+app:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET}
+
 server:
   port: 8081
 song-service:
@@ -13,3 +18,15 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${DISCOVERY_SERVICE_URL:http://localhost:8761/eureka}
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_S3_CREDENTIALS_ACCESS_KEY:test}
+      secret-key: ${AWS_S3_CREDENTIALS_SECRET_KEY:test}
+    region:
+      static: ${AWS_DEFAULT_REGION:us-east-1}
+    endpoint:
+      url: ${AWS_S3_ENDPOINT_URL:http://localhost:4566}
+    s3:
+      bucket: ${AWS_S3_BUCKET:ms-audio-bucket}

@@ -20,7 +20,5 @@ public class AudioRecord {
 
     private String type;
 
-    @JdbcTypeCode(LONGVARBINARY)
-    @Column(name = "audio_data", columnDefinition = "bytea")
-    private byte[] audioData;
+    private String s3key;
 }

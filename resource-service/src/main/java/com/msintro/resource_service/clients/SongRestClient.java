@@ -1,4 +1,4 @@
-package com.msintro.resource_service.services;
+package com.msintro.resource_service.clients;
 
 import com.msintro.resource_service.dto.IdListResponseDto;
 import com.msintro.resource_service.dto.IdResponseDto;
