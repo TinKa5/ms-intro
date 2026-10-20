@@ -43,7 +43,7 @@ services:
     ports:
       - "127.0.0.1:4566:4566"
     volumes:
-      - ./init-scripts/aws-s3/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
+      - ./init-scripts/aws-s3:/etc/localstack/init/ready.d
 
   song-service:
     build:
@@ -85,8 +85,13 @@ services:
       context: ./resource-processor
     environment:
       DISCOVERY_SERVICE_URL: ${DISCOVERY_SERVICE_URL}
+      SONG_SERVICE_URL: ${SONG_SERVICE_URL}
+      RECOURSE_SERVICE_URL: ${RECOURSE_SERVICE_URL}
     depends_on:
       - discovery-server
+      - song-service
+      - resource-service
+      - kafka
     ports:
       - "8083:8083"
 
@@ -95,6 +100,45 @@ services:
       context: ./discovery-server
     ports:
       - "8761:8761"
+
+  kafka:
+    image: apache/kafka:4.1.2
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # Broker + Controller in one process
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+
+      # Internal, external and controller listeners
+      KAFKA_LISTENERS: PLAINTEXT://:29092,CONTROLLER://:29093,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # KRaft quorum
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+
+      # Single-node development settings
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+
+  kafka-ua:
+    image: ghcr.io/kafbat/kafka-ui:latest
+    ports:
+      - "8070:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      DYNAMIC_CONFIG)ENABLED: 'true'
+    restart: unless-stopped
 
 volumes:
   pgadmin:

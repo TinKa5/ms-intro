@@ -1,9 +1,30 @@
 spring:
   application:
     name: resource-processor
+  kafka:
+    bootstrap-servers: kafka:29092
+    consumer:
+      group-id: resources-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        # 1. Змінюємо головний десеріалізатор на обгортку помилок
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        # 2. Вказуємо JsonDeserializer як делегат, який буде виконувати реальну роботу
+        "[spring.deserializer.value.delegate.class]": org.springframework.kafka.support.serializer.JsonDeserializer
+        # Ваші поточні налаштування залишаються без змін
+        "[spring.json.trusted.packages]": "*"
+        "[spring.json.type.mapping]": "idResponseDto:com.msintro.resource_processor.dto.IdResponseDto"
+
 server:
   port: 8083
+song-service:
+  url: ${SONG_SERVICE_URL:http://song-service}
+resource-service:
+  url: ${RECOURSE_SERVICE_URL:http://resource-service}
 eureka:
   client:
     serviceUrl:
       defaultZone: ${DISCOVERY_SERVICE_URL:http://localhost:8761/eureka}
+kafka:
+  topic: resource-topic
