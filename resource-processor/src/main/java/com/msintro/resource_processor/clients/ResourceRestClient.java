@@ -29,7 +29,6 @@ public class ResourceRestClient {
             )
     )
     public ResponseEntity<byte[]> getResource(Long id) {
-        System.out.println("GGGGG_id = " + id);
         return restClient.get()
                 .uri("/resources/{id}", id)
                 .header("Accept", "audio/mpeg")

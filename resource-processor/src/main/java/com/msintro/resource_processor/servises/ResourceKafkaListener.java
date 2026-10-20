@@ -20,7 +20,6 @@ public class ResourceKafkaListener {
 
     @KafkaListener(topics = "resource-topic")
     private void handleResource(@Payload IdResponseDto id) {
-        System.out.println(id + "=" + id.getId());
         ResponseEntity<byte[]> recourseResponse = resourceRestClient.getResource(id.getId());
         MetadataDto metadataDto = resourceService.process(recourseResponse.getBody());
         metadataDto.setId(id.getId());
