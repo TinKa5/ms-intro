@@ -86,7 +86,7 @@ services:
     environment:
       DISCOVERY_SERVICE_URL: ${DISCOVERY_SERVICE_URL}
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
-      RECOURSE_SERVICE_URL: ${RECOURSE_SERVICE_URL}
+      RESOURCE_SERVICE_URL: ${RESOURCE_SERVICE_URL}
     depends_on:
       - discovery-server
       - song-service
@@ -136,8 +136,8 @@ services:
       - kafka
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      DYNAMIC_CONFIG)ENABLED: 'true'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      DYNAMIC_CONFIG_ENABLED: 'true'
     restart: unless-stopped
 
 volumes:

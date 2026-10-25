@@ -2,7 +2,7 @@ spring:
   application:
     name: resource-processor
   kafka:
-    bootstrap-servers: kafka:29092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
       group-id: resources-group
       auto-offset-reset: earliest
@@ -21,7 +21,7 @@ server:
 song-service:
   url: ${SONG_SERVICE_URL:http://song-service}
 resource-service:
-  url: ${RECOURSE_SERVICE_URL:http://resource-service}
+  url: ${RESOURCE_SERVICE_URL:http://resource-service}
 eureka:
   client:
     serviceUrl:

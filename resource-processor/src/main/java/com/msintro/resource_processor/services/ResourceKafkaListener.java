@@ -1,4 +1,4 @@
-package com.msintro.resource_processor.servises;
+package com.msintro.resource_processor.services;
 
 import com.msintro.resource_processor.clients.ResourceRestClient;
 import com.msintro.resource_processor.clients.SongRestClient;
@@ -19,7 +19,7 @@ public class ResourceKafkaListener {
     private final SongRestClient songRestClient;
 
     @KafkaListener(topics = "resource-topic")
-    private void handleResource(@Payload IdResponseDto id) {
+    public void handleResource(@Payload IdResponseDto id) {
         ResponseEntity<byte[]> recourseResponse = resourceRestClient.getResource(id.getId());
         MetadataDto metadataDto = resourceService.process(recourseResponse.getBody());
         metadataDto.setId(id.getId());

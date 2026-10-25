@@ -9,6 +9,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +28,10 @@ public class KafkaResourceProducer {
                     maxDelay = 5000
             )
     )
-    public CompletableFuture sendMessage(Long id) {
-        return kafkaTemplate.send(topic, new IdResponseDto(id));
+    public void sendMessage(Long id) throws Exception {
+        kafkaTemplate
+                .send(topic, new IdResponseDto(id))
+                .get();
     }
 
 }

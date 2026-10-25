@@ -6,7 +6,6 @@ import com.msintro.resource_service.dto.IdResponseDto;
 import com.msintro.resource_service.exceptions.*;
 import com.msintro.resource_service.repository.AudioRecord;
 import com.msintro.resource_service.repository.AudioRecordRepository;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -53,12 +52,14 @@ public class ResourceService {
                 .map(repository::getReferenceById)
                 .map(AudioRecord::getS3key)
                 .toList();
-        s3Storage.deleteFileList(keys);
-        repository.deleteAllById(result);
-        String queryString = result.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
-        client.deleteMetadata(queryString);
+        if (!result.isEmpty()) {
+            s3Storage.deleteFileList(keys);
+            repository.deleteAllById(result);
+            String queryString = result.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            client.deleteMetadata(queryString);
+        }
 
         return new IdListResponseDto(result.toArray(Long[]::new));
     }

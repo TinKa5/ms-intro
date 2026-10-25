@@ -11,7 +11,7 @@ import org.springframework.web.client.RestClient;
 @Component
 public class ResourceRestClient {
 
-    private RestClient restClient;
+    private final RestClient restClient;
 
     public ResourceRestClient(
             @Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder,
