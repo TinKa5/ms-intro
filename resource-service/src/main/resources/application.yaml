@@ -5,6 +5,15 @@ spring:
     url: ${RESOURCE_DB_URL:jdbc:postgresql://localhost:5432/resource-db}
     username: ${RESOURCE_DB_USER:postgres}
     password: ${RESOURCE_DB_PASSWORD:postgres}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        "[spring.json.type.mapping]": "idResponseDto:com.msintro.resource_service.dto.IdResponseDto"
+
+
 
 app:
   s3:
@@ -30,3 +39,6 @@ cloud:
       url: ${AWS_S3_ENDPOINT_URL:http://localhost:4566}
     s3:
       bucket: ${AWS_S3_BUCKET:ms-audio-bucket}
+kafka:
+  topic: resource-topic
+

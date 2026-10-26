@@ -1,4 +1,4 @@
-package com.msintro.resource_processor.servises;
+package com.msintro.resource_processor.services;
 
 import com.msintro.resource_processor.dto.MetadataDto;
 import com.msintro.resource_processor.exceptions.InvalidMP3FormatException;

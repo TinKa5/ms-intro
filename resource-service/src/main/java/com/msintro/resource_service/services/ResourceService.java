@@ -6,26 +6,29 @@ import com.msintro.resource_service.dto.IdResponseDto;
 import com.msintro.resource_service.exceptions.*;
 import com.msintro.resource_service.repository.AudioRecord;
 import com.msintro.resource_service.repository.AudioRecordRepository;
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-@Data
+@RequiredArgsConstructor
 public class ResourceService {
 
     private final AudioRecordRepository repository;
     private final SongRestClient client;
     private final S3Storage s3Storage;
+    private final KafkaResourceProducer resourceProducer;
 
     public IdResponseDto save(byte[] audioData) {
         try {
             String key = s3Storage.uploadFile(audioData);
             AudioRecord record = repository.save(new AudioRecord(null, "audio/mpeg", key));
+            resourceProducer.sendMessage(record.getId());
             return new IdResponseDto(record.getId());
         } catch (Exception ex) {
             throw new S3UploadException();
@@ -49,8 +52,14 @@ public class ResourceService {
                 .map(repository::getReferenceById)
                 .map(AudioRecord::getS3key)
                 .toList();
-        s3Storage.deleteFileList(keys);
-        repository.deleteAllById(result);
+        if (!result.isEmpty()) {
+            s3Storage.deleteFileList(keys);
+            repository.deleteAllById(result);
+            String queryString = result.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            client.deleteMetadata(queryString);
+        }
 
         return new IdListResponseDto(result.toArray(Long[]::new));
     }
