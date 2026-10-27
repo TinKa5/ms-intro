@@ -1,0 +1,47 @@
+{
+  "consumer": {
+    "name": "resource-processor"
+  },
+  "interactions": [
+    {
+      "contents": {
+        "content": {
+          "id": 102
+        },
+        "contentType": "application/json",
+        "encoded": false
+      },
+      "description": "a resource created event",
+      "key": "",
+      "matchingRules": {
+        "body": {
+          "$.id": {
+            "combine": "AND",
+            "matchers": [
+              {
+                "match": "integer"
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {
+        "contentType": "application/json",
+        "kafka_topic": "resource-topic"
+      },
+      "pending": false,
+      "type": "Asynchronous/Messages"
+    }
+  ],
+  "metadata": {
+    "pact-jvm": {
+      "version": "4.7.0"
+    },
+    "pactSpecification": {
+      "version": "4.0"
+    }
+  },
+  "provider": {
+    "name": "resource-service"
+  }
+}
