@@ -13,7 +13,6 @@ import com.msintro.resource_service.dto.IdResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Map;
 

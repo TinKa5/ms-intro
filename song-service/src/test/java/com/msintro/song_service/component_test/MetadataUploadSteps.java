@@ -1,6 +1,7 @@
 package com.msintro.song_service.component_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
@@ -50,13 +50,13 @@ public class MetadataUploadSteps {
     @Given("I have a valid metadata")
     public void setValidMetadata() {
         uploadingData = VALID_METADATA;
-        assertTrue(VALID_METADATA.length() > 0 );
+        assertTrue(VALID_METADATA.length() > 0);
     }
 
     @Given("I have a metadata without Name field")
     public void setInvalidMetadata() {
         uploadingData = INVALID_METADATA;
-        assertFalse(INVALID_METADATA.contains("name") );
+        assertFalse(INVALID_METADATA.contains("name"));
     }
 
     @When("I upload the metadata")

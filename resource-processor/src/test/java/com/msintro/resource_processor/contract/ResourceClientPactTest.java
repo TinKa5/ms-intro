@@ -2,12 +2,9 @@ package com.msintro.resource_processor.contract;
 
 
 import au.com.dius.pact.consumer.MockServer;
-import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
-import au.com.dius.pact.consumer.junit5.*;
-
-import au.com.dius.pact.core.model.PactSpecVersion;
-import au.com.dius.pact.core.model.RequestResponsePact;
+import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
+import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
@@ -22,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @ExtendWith(PactConsumerTestExt.class)
-@PactTestFor(providerName = "test_provider", hostInterface="localhost")
+@PactTestFor(providerName = "test_provider", hostInterface = "localhost")
 public class ResourceClientPactTest {
     private static final byte[] AUDIO = {
             0x01, 0x02, 0x03, 0x04
@@ -42,7 +39,7 @@ public class ResourceClientPactTest {
                 .willRespondWith()
                 .status(200)
                 .headers(headers)
-                .withBinaryData(AUDIO,  "audio/mpeg")
+                .withBinaryData(AUDIO, "audio/mpeg")
                 .toPact(V4Pact.class);
     }
 
@@ -60,5 +57,5 @@ public class ResourceClientPactTest {
         assertThat(response.getHeaders().get("Content-Type").contains("audio/mpeg")).isTrue();
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).isEqualTo(AUDIO);
-}
+    }
 }
