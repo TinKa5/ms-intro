@@ -73,6 +73,7 @@ services:
       AWS_S3_CREDENTIALS_SECRET_KEY: ${AWS_S3_CREDENTIALS_SECRET_KEY}
       AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - resource-db
       - song-service
@@ -87,6 +88,7 @@ services:
       DISCOVERY_SERVICE_URL: ${DISCOVERY_SERVICE_URL}
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
       RESOURCE_SERVICE_URL: ${RESOURCE_SERVICE_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       - discovery-server
       - song-service

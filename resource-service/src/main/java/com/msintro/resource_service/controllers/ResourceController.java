@@ -5,6 +5,7 @@ import com.msintro.resource_service.dto.IdResponseDto;
 import com.msintro.resource_service.services.ResourceService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,9 @@ public class ResourceController {
     @GetMapping(value = "/{id}",
             produces = "audio/mpeg")
     public ResponseEntity<byte[]> get(@PathVariable String id) {
-        return ResponseEntity.ok(service.get(id));
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("audio/mpeg"))
+                .body(service.get(id));
     }
 
     @DeleteMapping
