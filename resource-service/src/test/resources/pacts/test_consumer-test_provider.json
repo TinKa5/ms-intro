@@ -1,0 +1,48 @@
+{
+  "consumer": {
+    "name": "test_consumer"
+  },
+  "interactions": [
+    {
+      "description": "a request for audio resource 102",
+      "key": "91792f5b",
+      "pending": false,
+      "providerStates": [
+        {
+          "name": "resource 102 exists"
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/resources/102"
+      },
+      "response": {
+        "body": {
+          "content": "AQIDBA==",
+          "contentType": "audio/mpeg",
+          "contentTypeHint": "DEFAULT",
+          "encoded": "base64"
+        },
+        "headers": {
+          "Content-Type": [
+            "audio/mpeg"
+          ]
+        },
+        "status": 200
+      },
+      "transport": "http",
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pact-jvm": {
+      "version": "4.7.0"
+    },
+    "pactSpecification": {
+      "version": "4.0"
+    }
+  },
+  "provider": {
+    "name": "test_provider"
+  }
+}
