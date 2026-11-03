@@ -2,7 +2,7 @@ spring:
   application:
     name: resource-processor
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:http://localhost:9092}
     consumer:
       group-id: resources-group
       auto-offset-reset: earliest
@@ -28,3 +28,15 @@ eureka:
       defaultZone: ${DISCOVERY_SERVICE_URL:http://localhost:8761/eureka}
 kafka:
   topic: resource-topic
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true

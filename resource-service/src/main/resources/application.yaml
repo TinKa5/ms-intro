@@ -6,7 +6,7 @@ spring:
     username: ${RESOURCE_DB_USER:postgres}
     password: ${RESOURCE_DB_PASSWORD:postgres}
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:http://localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -41,4 +41,16 @@ cloud:
       bucket: ${AWS_S3_BUCKET:ms-audio-bucket}
 kafka:
   topic: resource-topic
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
 

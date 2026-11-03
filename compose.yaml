@@ -5,6 +5,12 @@ services:
       POSTGRES_DB: ${RESOURCE_DB}
       POSTGRES_USER: ${RESOURCE_DB_USER}
       POSTGRES_PASSWORD: ${RESOURCE_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${RESOURCE_DB_USER} -d ${RESOURCE_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     volumes:
       - ./init-scripts/resource-db:/docker-entrypoint-initdb.d:ro
     ports:
@@ -28,6 +34,12 @@ services:
       POSTGRES_DB: ${SONG_DB}
       POSTGRES_USER: ${SONG_DB_USER}
       POSTGRES_PASSWORD: ${SONG_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${SONG_DB_USER} -d ${SONG_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     volumes:
       - ./init-scripts/song-db:/docker-entrypoint-initdb.d:ro
     ports:
@@ -42,6 +54,12 @@ services:
       AWS_DEFAULT_REGION: ${AWS_S3_REGION}
     ports:
       - "127.0.0.1:4566:4566"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:4566/_localstack/health >/dev/null || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     volumes:
       - ./init-scripts/aws-s3:/etc/localstack/init/ready.d
 
@@ -53,9 +71,18 @@ services:
       SONG_DB_USER: ${SONG_DB_USER}
       SONG_DB_PASSWORD: ${SONG_DB_PASSWORD}
       DISCOVERY_SERVICE_URL: ${DISCOVERY_SERVICE_URL}
+    healthcheck:
+      test: [ "CMD-SHELL",
+              "wget -q --spider  || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
-      - song-db
-      - discovery-server
+      song-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
     ports:
       - "8082"
 
@@ -74,10 +101,22 @@ services:
       AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+    healthcheck:
+      test: [ "CMD-SHELL",
+              "wget -q --spider http://localhost:8081/actuator/health/readiness || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
-      - resource-db
-      - song-service
-      - discovery-server
+      resource-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     ports:
       - "8081:8081"
 
@@ -89,17 +128,35 @@ services:
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
       RESOURCE_SERVICE_URL: ${RESOURCE_SERVICE_URL}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+    healthcheck:
+      test: [ "CMD-SHELL",
+              "wget -q --spider http://localhost:8083/actuator/health/readiness || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     depends_on:
-      - discovery-server
-      - song-service
-      - resource-service
-      - kafka
+      discovery-server:
+        condition: service_healthy
+      song-service:
+        condition: service_healthy
+      resource-service:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     ports:
       - "8083:8083"
 
   discovery-server:
     build:
       context: ./discovery-server
+    healthcheck:
+      test: [ "CMD-SHELL",
+              "wget -q --spider http://localhost:8761/actuator/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     ports:
       - "8761:8761"
 
@@ -129,13 +186,20 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:29092 >/dev/null 2>&1 || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   kafka-ua:
     image: ghcr.io/kafbat/kafka-ui:latest
     ports:
       - "8070:8080"
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
