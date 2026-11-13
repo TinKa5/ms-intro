@@ -1,56 +1,5 @@
 spring:
   application:
     name: resource-service
-  datasource:
-    url: ${RESOURCE_DB_URL:jdbc:postgresql://localhost:5432/resource-db}
-    username: ${RESOURCE_DB_USER:postgres}
-    password: ${RESOURCE_DB_PASSWORD:postgres}
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:http://localhost:9092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        "[spring.json.type.mapping]": "idResponseDto:com.msintro.resource_service.dto.IdResponseDto"
-
-
-
-app:
-  s3:
-    bucket-name: ${AWS_S3_BUCKET}
-
-server:
-  port: 8081
-song-service:
-  url: ${SONG_SERVICE_URL:http://song-service}
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${DISCOVERY_SERVICE_URL:http://localhost:8761/eureka}
-
-cloud:
-  aws:
-    credentials:
-      access-key: ${AWS_S3_CREDENTIALS_ACCESS_KEY:test}
-      secret-key: ${AWS_S3_CREDENTIALS_SECRET_KEY:test}
-    region:
-      static: ${AWS_DEFAULT_REGION:us-east-1}
-    endpoint:
-      url: ${AWS_S3_ENDPOINT_URL:http://localhost:4566}
-    s3:
-      bucket: ${AWS_S3_BUCKET:ms-audio-bucket}
-kafka:
-  topic: resource-topic
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-
-  endpoint:
-    health:
-      show-details: always
-      probes:
-        enabled: true
-
+  config:
+    import: optional:configserver:${CONFIG_SERVICE_URL:http://localhost:8888}

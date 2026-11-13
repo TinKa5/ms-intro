@@ -1,27 +1,5 @@
 spring:
   application:
     name: song-service
-  datasource:
-    url: ${SONG_DB_URL:jdbc:postgresql://localhost:5433/song-db}
-    username: ${SONG_DB_USER:postgres}
-    password: ${SONG_DB_PASSWORD:postgres}
-server:
-    port: 8082
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${DISCOVERY_SERVICE_URL:http://localhost:8761/eureka}
-    instance:
-      instance-id: ${spring.application.name}:${random.uuid}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-
-  endpoint:
-    health:
-      show-details: always
-      probes:
-        enabled: true
+  config:
+    import: optional:configserver:${CONFIG_SERVICE_URL:http://localhost:8888}
