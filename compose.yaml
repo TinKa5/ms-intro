@@ -28,6 +28,24 @@ services:
     ports:
       - "5050:80"
 
+  storage-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${STORAGE_DB}
+      POSTGRES_USER: ${STORAGE_DB_USER}
+      POSTGRES_PASSWORD: ${STORAGE_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${STORAGE_DB_USER} -d ${STORAGE_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./init-scripts/storage-db:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5434:5432"
+
+
   song-db:
     image: postgres:17-alpine
     environment:
@@ -95,12 +113,14 @@ services:
       RESOURCE_DB_USER: ${RESOURCE_DB_USER}
       RESOURCE_DB_PASSWORD: ${RESOURCE_DB_PASSWORD}
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
+      STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
       DISCOVERY_SERVICE_URL: ${DISCOVERY_SERVICE_URL}
       AWS_DEFAULT_REGION: ${AWS_S3_REGION}
       AWS_S3_CREDENTIALS_ACCESS_KEY: ${AWS_S3_CREDENTIALS_ACCESS_KEY}
       AWS_S3_CREDENTIALS_SECRET_KEY: ${AWS_S3_CREDENTIALS_SECRET_KEY}
       AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_BUCKET_STAGE: ${AWS_S3_BUCKET_STAGE}
+      AWS_S3_BUCKET_PERMANENT: ${AWS_S3_BUCKET_PERMANENT}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
       CONFIG_SERVICE_URL: ${CONFIG_SERVICE_URL}
     healthcheck:
@@ -149,6 +169,30 @@ services:
         condition: service_healthy
     ports:
       - "8083:8083"
+
+  storage-service:
+    build:
+      context: ./storage-service
+    environment:
+      DISCOVERY_SERVICE_URL: ${DISCOVERY_SERVICE_URL}
+      CONFIG_SERVICE_URL: ${CONFIG_SERVICE_URL}
+      STORAGE_DB_URL: ${STORAGE_DB_URL}
+      STORAGE_DB_USER: ${STORAGE_DB_USER}
+      STORAGE_DB_PASSWORD: ${STORAGE_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL",
+              "wget -q --spider http://localhost:8084/actuator/health/readiness || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    depends_on:
+      storage-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
 
   discovery-server:
     build:

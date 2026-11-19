@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -23,34 +24,38 @@ import java.util.UUID;
 public class S3Storage {
 
     private final S3Client s3Client;
-    @Value("${cloud.aws.s3.bucket}")
-    private String s3bucketName;
 
-
-    public String uploadFile(byte[] file) throws IOException {
+    public String uploadFile(byte[] file, String bucket, String path) throws IOException {
         //String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
-        String key = UUID.randomUUID().toString();
+        String key = path.replaceAll("^/+|/*$", "") + "/" + UUID.randomUUID();
+
 
         s3Client.putObject(PutObjectRequest.builder()
-                        .bucket(s3bucketName).key(key).build(),
+                        .bucket(bucket).key(key).build(),
                 RequestBody.fromBytes(file));
         return key;
     }
 
-    public byte[] getFile(String key) {
+    public byte[] getFile(String key, String bucket) {
         ResponseBytes<GetObjectResponse> responseBytes = s3Client.getObjectAsBytes(GetObjectRequest.builder()
-                .bucket(s3bucketName).key(key).build());
+                .bucket(bucket).key(key).build());
         return responseBytes.asByteArray();
     }
 
-    public void deleteFileList(Collection<String> keys) {
-        keys.forEach(this::deleteFile);
+    public void deleteFileList(Map<String, String> fileInfo) {
+        fileInfo.keySet().forEach(k -> deleteFile(k, fileInfo.get(k)));
     }
 
-    public void deleteFile(String key) {
+    public void deleteFile(String key, String bucket) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
-                .bucket(s3bucketName)
+                .bucket(bucket)
                 .key(key)
                 .build());
+    }
+
+    public String moveFile(String oldBucket, String oldKey, String newBucket, String newKey) throws IOException {
+        String path = uploadFile(getFile(oldKey, oldBucket), newBucket, newKey);
+        deleteFile(oldKey, oldBucket);
+        return path;
     }
 }
