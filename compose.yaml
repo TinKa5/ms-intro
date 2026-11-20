@@ -73,7 +73,7 @@ services:
     ports:
       - "127.0.0.1:4566:4566"
     healthcheck:
-      test: [ "CMD", "awslocal", "s3api", "head-bucket", "--bucket", "ms-audio-bucket" ]
+      test: [ "CMD", "awslocal", "s3api", "head-bucket", "--bucket", "staging-bucket" ]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -31,7 +31,7 @@ public class StorageRestClient {
 
     private List<StorageDto> getAllFallback(Throwable throwable) {
         return List.of(
-                new StorageDto(null, "STAGING", "staging-bucket", "/staging"),
-                new StorageDto(null,"PERMANENT", "permanent-bucket", "/permanent"));
+                new StorageDto(null, "STAGING", "staging-bucket", "/staging-fallback"),
+                new StorageDto(null,"PERMANENT", "permanent-bucket", "/permanent-fallback"));
     }
 }
