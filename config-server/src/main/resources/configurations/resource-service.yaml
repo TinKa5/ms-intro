@@ -10,14 +10,31 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         "[spring.json.type.mapping]": "idResponseDto:com.msintro.resource_service.dto.IdResponseDto"
+    consumer:
+      group-id: resources-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # 1. Змінюємо головний десеріалізатор на обгортку помилок
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        # 2. Вказуємо JsonDeserializer як делегат, який буде виконувати реальну роботу
+        "[spring.deserializer.value.delegate.class]": org.springframework.kafka.support.serializer.JsonDeserializer
+        # Ваші поточні налаштування залишаються без змін
+        "[spring.json.trusted.packages]": "*"
+        "[spring.json.type.mapping]": "statusResponseDto:com.msintro.resource_service.dto.StatusResponseDto"
 app:
   s3:
     bucket-name: ${AWS_S3_BUCKET}
 
 server:
   port: 8081
+
 song-service:
   url: ${SONG_SERVICE_URL:http://song-service}
+
+storage-service:
+  url: ${STORAGE_SERVICE_URL:http://storage-service}
+
 eureka:
   client:
     serviceUrl:
@@ -33,18 +50,36 @@ cloud:
     endpoint:
       url: ${AWS_S3_ENDPOINT_URL:http://localhost:4566}
     s3:
-      bucket: ${AWS_S3_BUCKET:ms-audio-bucket}
+      bucket-type:
+        stage: ${AWS_S3_BUCKET_STAGE:STAGING}
+        permanent: ${AWS_S3_BUCKET_PERMANENT:PERMANENT}
+
 kafka:
-  topic: resource-topic
+  topic:
+    resource: resource-topic
+    status: status-topic
 
 management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,info,circuitbreakers,circuitbreakerevents
 
   endpoint:
     health:
       show-details: always
       probes:
         enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      storageService:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true

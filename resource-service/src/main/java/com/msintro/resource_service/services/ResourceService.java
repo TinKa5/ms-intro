@@ -3,16 +3,15 @@ package com.msintro.resource_service.services;
 import com.msintro.resource_service.clients.SongRestClient;
 import com.msintro.resource_service.dto.IdListResponseDto;
 import com.msintro.resource_service.dto.IdResponseDto;
+import com.msintro.resource_service.dto.StorageDto;
 import com.msintro.resource_service.exceptions.*;
 import com.msintro.resource_service.repository.AudioRecord;
 import com.msintro.resource_service.repository.AudioRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,11 +22,14 @@ public class ResourceService {
     private final SongRestClient client;
     private final S3Storage s3Storage;
     private final KafkaResourceProducer resourceProducer;
+    private final StorageService storageService;
 
     public IdResponseDto save(byte[] audioData) {
         try {
-            String key = s3Storage.uploadFile(audioData);
-            AudioRecord record = repository.save(new AudioRecord(null, "audio/mpeg", key));
+            StorageDto stage = storageService.getStage();
+            String key = s3Storage.uploadFile(audioData, stage.bucket(), stage.path());
+            AudioRecord record = repository.save(
+                    new AudioRecord(null, "audio/mpeg", key, stage.storageType(), stage.bucket()));
             resourceProducer.sendMessage(record.getId());
             return new IdResponseDto(record.getId());
         } catch (Exception ex) {
@@ -39,7 +41,7 @@ public class ResourceService {
         Long id = parseId(idStr);
         AudioRecord record = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException(id));
-        return s3Storage.getFile(record.getS3key());
+        return s3Storage.getFile(record.getS3key(), record.getBucket());
     }
 
     public IdListResponseDto delete(String id) {
@@ -48,10 +50,9 @@ public class ResourceService {
         Collection<Long> result = ids.stream()
                 .filter(repository::existsById)
                 .toList();
-        Collection<String> keys = result.stream()
+        Map<String, String> keys = result.stream()
                 .map(repository::getReferenceById)
-                .map(AudioRecord::getS3key)
-                .toList();
+                .collect(Collectors.toMap(AudioRecord::getS3key, AudioRecord::getBucket));
         if (!result.isEmpty()) {
             s3Storage.deleteFileList(keys);
             repository.deleteAllById(result);
@@ -62,6 +63,21 @@ public class ResourceService {
         }
 
         return new IdListResponseDto(result.toArray(Long[]::new));
+    }
+
+    @Transactional
+    public void updateStatus(Long id){
+        try {
+            StorageDto permanent = storageService.getPermanent();
+            AudioRecord record = repository.getReferenceById(id);
+            String key = s3Storage.moveFile(record.getBucket(), record.getS3key(), permanent.bucket(), permanent.path());
+            record.setStatus(permanent.storageType());
+            record.setBucket(permanent.bucket());
+            record.setS3key(key);
+
+        } catch (Exception e) {
+            new S3UploadException();
+        }
     }
 
     public Collection<Long> parseIds(String str) {

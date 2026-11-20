@@ -21,4 +21,8 @@ public class AudioRecord {
     private String type;
 
     private String s3key;
+
+    private String status;
+
+    private String bucket;
 }

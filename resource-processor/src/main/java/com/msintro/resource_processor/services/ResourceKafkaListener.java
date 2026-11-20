@@ -4,6 +4,7 @@ import com.msintro.resource_processor.clients.ResourceRestClient;
 import com.msintro.resource_processor.clients.SongRestClient;
 import com.msintro.resource_processor.dto.IdResponseDto;
 import com.msintro.resource_processor.dto.MetadataDto;
+import com.msintro.resource_processor.dto.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -17,6 +18,8 @@ public class ResourceKafkaListener {
     private final ResourceService resourceService;
     private final ResourceRestClient resourceRestClient;
     private final SongRestClient songRestClient;
+    private final KafkaStatusProducer kafkaStatusProducer;
+
 
     @KafkaListener(topics = "resource-topic")
     public void handleResource(@Payload IdResponseDto id) {
@@ -24,5 +27,6 @@ public class ResourceKafkaListener {
         MetadataDto metadataDto = resourceService.process(recourseResponse.getBody());
         metadataDto.setId(id.getId());
         songRestClient.saveMetadata(metadataDto);
+        kafkaStatusProducer.sendStatus(Status.Success, id.getId());
     }
 }

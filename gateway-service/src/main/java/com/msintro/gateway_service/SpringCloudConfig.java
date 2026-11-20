@@ -16,6 +16,9 @@ public class SpringCloudConfig {
                 .route("songs",
                         r -> r.path("/songs/**")
                                 .uri("lb://SONG-SERVICE"))
+                .route("storages",
+                        r -> r.path("/storages/**")
+                                .uri("lb://STORAGE-SERVICE"))
                 .build();
     }
 }

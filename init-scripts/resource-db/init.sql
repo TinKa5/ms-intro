@@ -3,5 +3,7 @@ DROP TABLE IF EXISTS audio_record;
 CREATE TABLE IF NOT EXISTS audio_record (
     id BIGSERIAL PRIMARY KEY,
     type VARCHAR(50) NOT NULL,
-    s3key VARCHAR(200) NOT NULL
+    s3key VARCHAR(200) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    bucket VARCHAR(50) NOT NULL
 )

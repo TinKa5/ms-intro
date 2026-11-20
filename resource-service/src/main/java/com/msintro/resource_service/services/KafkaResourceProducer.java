@@ -17,7 +17,7 @@ public class KafkaResourceProducer {
 
     private final KafkaTemplate<String, IdResponseDto> kafkaTemplate;
 
-    @Value("${kafka.topic}")
+    @Value("${kafka.topic.resource}")
     private String topic;
 
     @Retryable(
